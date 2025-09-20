@@ -1,0 +1,46 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <p style="font-size:40px"><b>All Posts</b></p>
+    <p></p>
+    <p></p>
+    {% if user.is_authenticated %}
+    <div class = "newpost-container">
+    <h3>New Post</h3>
+    <form action = "/view_post" method = "POST">
+        {% csrf_token %}
+        <textarea name ="content" style="text-align:center;border-radius:8px" rows="2" cols ="220px" autofocus placeholder="What are you thinking?"></textarea>
+        <div></div>
+        <input class ="postbutton" type = "submit" value = "Post">
+        <input type = "hidden" name = "username" value = "{{user.username}}">
+    </form>
+    </div>
+    {% endif %}
+    {% if message %}
+    {{message}}
+    {%endif%}
+    {% for post_listing in post_listings %}
+        <div class = "newpost-container">
+            <h4><a href = "{% url "profile" post_listing.username %}">{{post_listing.username}}</a></h4>
+            <p>{{post_listing.timestamp}}</p>
+            <div style = "font-size: 22px">
+                {{post_listing.content}}
+            </div>
+            <div>
+                <span class = "likes-count">{{post_listing.number_of_likes}} Likes</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <a class = "likebutton" href ="{% url "like" post_listing.id %}"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded',function(){
+                document.querySelectorAll('img').forEach(img =>{
+                    img.style.color = "#1565c0";
+                })
+            })
+        </script>
+    {%endfor%}
+{% endblock %}

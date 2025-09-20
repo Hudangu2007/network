@@ -1,0 +1,23 @@
+{% extends "network/layout.html" %}
+{%block body%}
+<div>
+    <h1>{{username}}</h1>
+    <h2>Followers: {{followers}}
+        Following: {{following}}
+    </h2>
+    {%for user_post in user_posts%}
+    <div class = "newpost-container">
+        <h4><a href = "{% url "profile" user_post.username %}">{{user_post.username}}</a></h4>
+        <p>{{user_post.timestamp}}</p>
+        <div style = "font-size: 22px">
+            {{user_post.content}}
+        </div>
+        <div>
+            <span class = "likes-count">Likes: {{user_post.likes}}</span>
+            <div></div>
+            <button class = "likebutton"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{user_post.id}}" width="25" height="25" alt="buttonpng" border="0" /></button>
+        </div>
+    </div>
+    {%endfor%}
+</div>
+{%endblock%}

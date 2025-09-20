@@ -1,0 +1,84 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <p style="font-size:40px"><b>All Posts</b></p>
+    <p></p>
+    <p></p>
+    {% if user.is_authenticated %}
+    <div class = "newpost-container">
+    <h3>New Post</h3>
+    <form action = "/view_post" method = "POST">
+        {% csrf_token %}
+        <textarea name ="content" style="text-align:center;border-radius:8px" rows="2" cols ="220px" autofocus placeholder="What are you thinking?"></textarea>
+        <div></div>
+        <input class ="postbutton" type = "submit" value = "Post">
+        <input type = "hidden" name = "username" value = "{{user.username}}">
+    </form>
+    </div>
+    {% endif %}
+    {% if message %}
+    {{message}}
+    {%endif%}
+    {% for post_listing in post_listings %}
+        <div class = "newpost-container">
+            <h4><a href = "{% url "profile" post_listing.username %}">{{post_listing.username}}</a></h4>
+            <p>{{post_listing.timestamp}}</p>
+            <div style = "font-size: 22px">
+                {{post_listing.content}}
+            </div>
+            <div>
+                <span class = "likes-count">Likes: {{post_listing.likes}}</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <button class = "likebutton"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></button>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>
+        </div>
+    {%endfor%}
+    <script>
+        document.addEventListener('DOMContentLoaded',function(){
+            document.querySelectorAll('img').forEach(img => {
+                img.onclick = function(){
+                const postId = this.dataset.postId;
+                fetch(`/toggle_like/${postId}/`,{
+                    method:'POST',
+                    headers:{
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const LikesElement = this.parentElement.parentElement.querySelector(".likes-count")
+                    if(data.success){
+                        LikesElement.textContent = `Likes: ${data.likes}`;
+                        if(data.liked === true){
+                            this.style.filter = "brightness(0) saturate(100%) invert(70%) sepia(84%) saturate(434%) hue-rotate(142deg) brightness(90%) contrast(92%)";
+                        }else{
+                            this.style.filter = "none"; // Màu gốc
+                        }
+                    }
+                });
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+                }
+            });
+        });
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}

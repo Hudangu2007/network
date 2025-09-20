@@ -1,0 +1,18 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <p style="font-size:40px"><b>All Posts</b></p>
+    <p></p>
+    <p></p>
+    <div class = "newpost-container">
+    <h3>New Post</h3>
+    <form action = "{% url post_listing %}" method = "POST">
+        {% csrf_token %}
+        <textarea name ="content" style="text-align:center;border-radius:8px" rows="2" cols ="220px" autofocus placeholder="What are you thinking?"></textarea>
+        <div><div>
+        <input class ="postbutton" type = "submit" value = "Post">
+        <input type = "hidden" name = "username" value = "{{user.username}}">
+    </form>
+    </div>
+    {%%}
+{% endblock %}

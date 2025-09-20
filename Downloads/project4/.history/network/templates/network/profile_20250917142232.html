@@ -1,0 +1,23 @@
+{% extends "network/layout.html" %}
+{%block body%}
+<div id = "profile_display">
+    <h1>{{username}}{% if user.username != username %}<span style = "font-size:20px"><form action = "{% url "toggle_follow" username %}" method = "POST">{% csrf_token %}<button class = "postbutton">Follow</button></form></span>{%endif%}</h1>
+    <h2><span id ="followers">Followers: {% if followers_count %}{{followers_count}}{%else%}0{%endif%}</span>
+        <span id ="following">Following: {%if following_count %}{{following_count}}{%else%}0{%endif%}</span>
+    </h2>
+</div>
+    {%for user_post in user_posts%}
+    <div class = "newpost-container">
+        <h4><a href = "{% url "profile" user_post.username %}">{{user_post.username}}</a></h4>
+        <p>{{user_post.timestamp}}</p>
+        <div style = "font-size: 22px">
+            {{user_post.content}}
+        </div>
+        <div>
+            <span class = "likes-count">Likes: {{user_post.number_of_likes}}</span>
+            <div></div>
+            <button class = "likebutton"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{user_post.id}}" width="25" height="25" alt="buttonpng" border="0" /></button>
+        </div>
+    </div>
+    {%endfor%}
+{%endblock%}

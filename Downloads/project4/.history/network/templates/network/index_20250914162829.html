@@ -1,0 +1,35 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <p style="font-size:40px"><b>All Posts</b></p>
+    <p></p>
+    <p></p>
+    {% if user.is_authenticated %}
+    <div class = "newpost-container">
+    <h3>New Post</h3>
+    <form action = "/view_post" method = "POST">
+        {% csrf_token %}
+        <textarea name ="content" style="text-align:center;border-radius:8px" rows="2" cols ="220px" autofocus placeholder="What are you thinking?"></textarea>
+        <div></div>
+        <input class ="postbutton" type = "submit" value = "Post">
+        <input type = "hidden" name = "username" value = "{{user.username}}">
+    </form>
+    </div>
+    {% endif %}
+    {% if message %}
+    {{message}}
+    {%endif%}
+    {% for post_listing in post_listings %}
+    <div class = "newpost-container">
+        <h4>{{post_listing.username}}</h4>
+        <p>{{post_listing.timestamp}}</p>
+        <div style = "font-size: 22px">
+            {{post_listing.content}}
+        </div>
+        <div>
+            Likes: {{post_listing.likes}}
+        </div>
+        <button class = "likebutton"><img src="https://i.ibb.co/CW5Wvry/buttonpng.png" alt="buttonpng" border="0" /></button>
+    </div>
+    {%endfor%}
+{% endblock %}
