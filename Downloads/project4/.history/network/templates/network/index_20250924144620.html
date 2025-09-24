@@ -19,6 +19,7 @@
     <div id = "posts-container">
     </div>
     <script>
+        let mailbox = 'index'
         document.addEventListener('DOMContentLoaded',function(){
             fetch("/taking_post") //Fetch ở đây cũng cần tạo path cho url
             .then(response => response.json())
@@ -60,13 +61,14 @@
                 return cookieValue; //Lấy csrftoken
             }
             document.querySelector('#posts-container').addEventListener('click',function(event){
-                let likeBtn = event.target.closest('.likebutton'); //Sử dụng closest để tìm nút like, nếu sử dụng event.target sẽ không hoạt động vì click vào img bên trong a chứ ko phải vào a
-                if(likeBtn){
+                if(event.target.classList.contains('likebutton')){
                     event.preventDefault();
-                    const parent = likeBtn.closest('.newpost-container');
+                    const parent = event.target.parentElement.parentElement;
+                    const child = parent.childNodes;
+                    console.log(child);
                     const post_id = parent.querySelector('.realpostid').textContent.trim();
                     console.log(post_id);
-                    fetch(`/like/${post_id}`,{
+                    fetch(`/like/${post_id}/${mailbox}`,{
                         method: 'POST',
                         headers: {
                         'Content-Type': 'application/json',
@@ -76,11 +78,7 @@
                     .then(response => response.json())
                     .then(result => {
                         if (result.status === 'success'){
-                            const likesCountSpan = parent.querySelector('.likes-count');
-                            console.log(likesCountSpan);
-                            likesCountSpan.textContent = `${result.post_total_likes} Likes`;
-                        }else{
-                            console.error('Error:', data.message);
+                            parent.childNodes[7].textContent = post_total_likes;
                         }
                     })
                 }

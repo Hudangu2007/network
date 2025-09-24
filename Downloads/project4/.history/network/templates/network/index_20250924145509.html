@@ -1,55 +1,31 @@
 {% extends "network/layout.html" %}
-{%block body%}
-<div id = "posts-container">
-</div>
-<script>
-        const pagination_count = {{pagination_count}};
-        let start = 0;
-        const quantity = 10;
-        let currentpage = 1;
-        console.log(pagination_count);
-        console.log(currentpage);
-        const username = "{{user.username}}"
+
+{% block body %}
+    <p style="font-size:40px"><b>All Posts</b></p>
+    <p></p>
+    <p></p>
+    {% if user.is_authenticated %}
+    <div class = "newpost-container">
+    <h3>New Post</h3>
+    <form action = "/view_post" method = "POST">
+        {% csrf_token %}
+        <textarea name ="content" style="text-align:center;border-radius:8px" rows="2" cols ="220px" autofocus placeholder="What are you thinking?"></textarea>
+        <div></div>
+        <input class ="postbutton" type = "submit" value = "Post">
+        <input type = "hidden" name = "username" value = "{{user.username}}">
+    </form>
+    </div>
+    {% endif %}
+    <div id = "posts-container">
+    </div>
+    <script>
         document.addEventListener('DOMContentLoaded',function(){
-            loadpost(start);
-            document.querySelectorAll('.page-link').forEach(button => {
-                button.addEventListener('click',function(event){
-                event.preventDefault();
-                document.getElementById('posts-container').innerHTML = '';
-                const pagitext = event.target.textContent.trim();
-                if(pagitext === "Previous"){ //Previous ko phải value nên phải const lấy text trước
-                    if(currentpage > 1){
-                        currentpage --;
-                        start = (currentpage-1)*quantity;
-                        //ko đc chạy loadpost ở đây nữa vì ở dưới có r
-                    }
-                }
-                else if(pagitext === "Next"){
-                    if(currentpage <= pagination_count){
-                        currentpage++;
-                        start = (currentpage-1)*quantity;
-                        //ko đc chạy loadpost ở đây nữa vì ở dưới có r
-                    }
-                }
-                else{
-                currentpage = parseInt(pagitext) //Chuyển lại về dạng int
-                start = (currentpage-1)*10;
-                }
-                loadpost(start); //load post để sau cùng để sau khi đổi start tự nó update ở cuối, tránh trg hợp chạy loadpost 2 lần
-                })
-                })    
-        })
-        function loadpost(start){
-            fetch(`/taking_follow/${username}`) //Fetch ở đây cũng cần tạo path cho url
+            fetch("/taking_post") //Fetch ở đây cũng cần tạo path cho url
             .then(response => response.json())
             .then(data =>{
                 console.log(data);
-                const riel_follow_listings = data.follow_listings.slice(start,start+quantity); //quá đẳng cấp trong việc sử dụng slice để limit display
-                console.log(riel_follow_listings);
-                riel_follow_listings.forEach(post => add_post(post));
+                data.post_listings.forEach(post => add_post(post));
             })
-        }
-
             function add_post(post){
                 const postDiv = document.createElement('div');
                 postDiv.className = 'newpost-container';
@@ -84,7 +60,7 @@
                 return cookieValue; //Lấy csrftoken
             }
             document.querySelector('#posts-container').addEventListener('click',function(event){
-                let likeBtn = event.target.closest('.likebutton'); //Sử dụng closest để tìm nút like, nếu sử dụng event.target sẽ không hoạt động vì click vào img bên trong a chứ ko phải vào a
+                let likeBtn = event.target.closest('.likebutton');
                 if(likeBtn){
                     event.preventDefault();
                     const parent = likeBtn.closest('.newpost-container');
@@ -108,17 +84,7 @@
                         }
                     })
                 }
-            })                      
+            })
+        })
     </script>
-    <div class = "pagination-div">
-    <nav aria-label="Page navigation example">
-        <ul class="pagination">
-            <span class = "previous"><li class="page-item"><a class="page-link">Previous</a></li></span>
-            {% for pagination_count in soluong %}
-            <li class="page-item"><a class="page-link">{{pagination_count}}</a></li>
-            {%endfor%}
-            <li class="page-item"><a class="page-link">Next</a></li>
-        </ul>
-        </nav>
-    </div>
-{%endblock%}
+{% endblock %}

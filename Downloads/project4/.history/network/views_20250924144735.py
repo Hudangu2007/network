@@ -94,7 +94,7 @@ def view_post(request):
 def like(request, post_id):
     if request.method == "POST":
         post = get_object_or_404(Post, id = post_id)
-        if post.likes.filter(id = request.user.id).exists():
+        if post.likes.filter(id = request.user.id):
             post.likes.remove(request.user)
         else:
             post.likes.add(request.user)
@@ -110,6 +110,9 @@ def like(request, post_id):
                 'post_total_likes':post_total_likes
             })
 
+@login_required
+def like(request,post_id,mailbox):
+    pass
 
 @login_required
 def toggle_follow(request, username):

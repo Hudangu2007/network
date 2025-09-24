@@ -91,25 +91,26 @@ def view_post(request):
             new_post.save()
     return redirect('index')
 
-def like(request, post_id):
+def like(request, post_id, mailbox):
     if request.method == "POST":
         post = get_object_or_404(Post, id = post_id)
-        if post.likes.filter(id = request.user.id).exists():
+        if post.likes.filter(id = request.user.id):
             post.likes.remove(request.user)
         else:
             post.likes.add(request.user)
         post.save()
-        post_total_likes = post.likes.count()
         #if mailbox == 'following_post':
         #    return redirect('following_post', username=request.user.username) #cần thêm username để chuyển về đúng trang following của user hiện tại
         #if mailbox == 'profile':
         #    return redirect('profile', username=request.user.username) #cần thêm username để chuyển về đúng trang profile của user hiện tại
         return JsonResponse({
                 'status': 'success',
-                'message': 'Post updated successfully',
-                'post_total_likes':post_total_likes
+                'message': 'Post updated successfully'
             })
 
+@login_required
+def like(request,post_id,mailbox):
+    pass
 
 @login_required
 def toggle_follow(request, username):

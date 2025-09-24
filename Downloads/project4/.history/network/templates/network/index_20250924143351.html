@@ -19,6 +19,7 @@
     <div id = "posts-container">
     </div>
     <script>
+        let mailbox = 'index'
         document.addEventListener('DOMContentLoaded',function(){
             fetch("/taking_post") //Fetch ở đây cũng cần tạo path cho url
             .then(response => response.json())
@@ -36,8 +37,7 @@
             </div>
             <div>
                 <span class = "likes-count">${post.number_of_likes} Likes</span>
-            </div>
-            <div>
+                <div></div>
                 {% if user.is_authenticated %}
                 <a class = "likebutton"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
                 {%else%}Please log in to like this post
@@ -46,41 +46,29 @@
             document.getElementById('posts-container').appendChild(postDiv);
             }
             function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                        for (let i = 0; i < cookies.length; i++) {
-                            const cookie = cookies[i].trim();
-                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                                    break;
-                                }
-                        }
-                }
-                return cookieValue; //Lấy csrftoken
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
+        }
+    }
+    return cookieValue; //Lấy csrftoken
             document.querySelector('#posts-container').addEventListener('click',function(event){
-                let likeBtn = event.target.closest('.likebutton'); //Sử dụng closest để tìm nút like, nếu sử dụng event.target sẽ không hoạt động vì click vào img bên trong a chứ ko phải vào a
-                if(likeBtn){
+                if(event.target.classList.contains('likebutton')){
                     event.preventDefault();
-                    const parent = likeBtn.closest('.newpost-container');
+                    const parent = event.target.parentElement.parentElement;
                     const post_id = parent.querySelector('.realpostid').textContent.trim();
-                    console.log(post_id);
-                    fetch(`/like/${post_id}`,{
+                    console.log(post_id)
+                    fetch(`/like/${post_id}/${mailbox}`,{
                         method: 'POST',
                         headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken'), // Thêm dòng này
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.status === 'success'){
-                            const likesCountSpan = parent.querySelector('.likes-count');
-                            console.log(likesCountSpan);
-                            likesCountSpan.textContent = `${result.post_total_likes} Likes`;
-                        }else{
-                            console.error('Error:', data.message);
                         }
                     })
                 }

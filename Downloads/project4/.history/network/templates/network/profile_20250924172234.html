@@ -1,7 +1,7 @@
 {% extends "network/layout.html" %}
 {%block body%}
 <div id = "profile_display">
-    <h1>{{username}}{% if user.username != username and user.is_authenticated %}<span style = "font-size:20px"><form action = "{% url "toggle_follow" username %}" method = "POST">{% csrf_token %}<button class = "postbutton" type ="submit">{% if is_following %}Unfollow{%else%}Follow{%endif%}</button></form></span>{%endif%}</h1>
+    <h1>{{username}}{% if user.username != username %}<span style = "font-size:20px"><form action = "{% url "toggle_follow" username %}" method = "POST">{% csrf_token %}<button class = "postbutton" type ="submit">{% if is_following %}Unfollow{%else%}Follow{%endif%}</button></form></span>{%endif%}</h1>
     <h2><span id ="followers">Followers: {% if followers_count %}{{followers_count}}{%else%}0{%endif%}</span>
         <span id ="following">Following: {%if following_count %}{{following_count}}{%else%}0{%endif%}</span>
     </h2>
@@ -26,7 +26,7 @@
                 postDiv.className = 'newpost-container';
                 postDiv.innerHTML=`<h4><a href = "/profile/${post.username}">${post.username}</a></h4>
             {% if user.username == username %}
-            <a class = "editingpost">Edit post</a>
+            <button  class = "editingpost">Edit post</button>
             {% endif %}
             <span class="realpostid" style = "display:none">${post.id}</span>
             <p>${post.timestamp}</p>
@@ -36,6 +36,7 @@
                 <div style="display: none;"> <!-- Không được để id ở đây vì mình tạo rất nhiều div như này dẫn đến lỗi --!>
                 <textarea name = "textedit" class = "textarea_display" autofocus>${content}</textarea>
                 <button class = "save">Save</button>
+                <button class = "cancel">Cancel</button>
                 </div> <!-- Không nên để thằng textarea chung div với thằng content hiện tại, tránh bug --!>
             <div>
                 <span class = "likes-count">${post.number_of_likes} Likes</span>
@@ -146,6 +147,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.error('Error:', data.message);
                         }
                     })
+                }
+                if(event.target.classList.contains('cancel')){
+                    event.preventDefault();
+                    const parent = event.target.parentElement;
+                    const textarea = parent.querySelector('.textarea_display');
+                    const button = parent.parentElement.querySelector('.editingpost');
+                    // Hiện nội dung post hiện tại
+                    parent.childNodes[8].textContent = textarea.value; //Lấy giá trị hiện tại trong textarea
+                    // Ẩn textarea và nút Save/Cancel
+                    textarea.parentElement.style.display = 'none';
+                    // Hiện nút Edit
+                    button.style.display = 'block';
                 }
     });
 });
