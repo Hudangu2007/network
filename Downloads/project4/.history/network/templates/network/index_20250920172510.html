@@ -1,0 +1,49 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <p style="font-size:40px"><b>All Posts</b></p>
+    <p></p>
+    <p></p>
+    {% if user.is_authenticated %}
+    <div class = "newpost-container">
+    <h3>New Post</h3>
+    <form action = "/view_post" method = "POST">
+        {% csrf_token %}
+        <textarea name ="content" style="text-align:center;border-radius:8px" rows="2" cols ="220px" autofocus placeholder="What are you thinking?"></textarea>
+        <div></div>
+        <input class ="postbutton" type = "submit" value = "Post">
+        <input type = "hidden" name = "username" value = "{{user.username}}">
+    </form>
+    </div>
+    {% endif %}
+    <div id = "posts-container">
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded',function(){
+            fetch("/taking_post/index")
+            .then(response => response.json())
+            .then(data =>{
+                console.log(data);
+                data.post_listings.forEach(post => add_post(post));
+            })
+            function add_post(post){
+                const postDiv = document.createElement('div');
+                postDiv.className = 'newpost-container';
+                postDiv.innerHTML=`<h4><a href = "{% url "profile" ${post.username} %">${post.username}</a></h4>
+            <p>${post.timestamp}</p>
+            <div style = "font-size: 22px">
+                ${post.content}
+            </div>
+            <div>
+                <span class = "likes-count">${post.number_of_likes} Likes</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <a class = "likebutton" href ="/like/${post.id}/index"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>`
+            document.getElementById('posts-container').appendChild(postDiv);
+            }
+        })
+    </script>
+{% endblock %}

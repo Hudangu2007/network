@@ -1,0 +1,94 @@
+{% extends "network/layout.html" %}
+{%block body%}
+<div id = "profile_display">
+    <h1>{{username}}{% if user.username != username %}<span style = "font-size:20px"><form action = "{% url "toggle_follow" username %}" method = "POST">{% csrf_token %}<button class = "postbutton" type ="submit">{% if is_following %}Unfollow{%else%}Follow{%endif%}</button></form></span>{%endif%}</h1>
+    <h2><span id ="followers">Followers: {% if followers_count %}{{followers_count}}{%else%}0{%endif%}</span>
+        <span id ="following">Following: {%if following_count %}{{following_count}}{%else%}0{%endif%}</span>
+    </h2>
+</div>
+    <div id = "posts-container">
+    </div>
+    <script>
+        const username = "{{username}}";
+        document.addEventListener('DOMContentLoaded',function(){
+            fetch(`/taking_profile/${username}`) //Fetch ở đây cũng cần tạo path cho url
+            .then(response => response.json())
+            .then(data =>{
+                console.log(data);
+                data.posts.forEach(post => add_post(post));
+            })
+        })
+
+        function add_post(post){
+                const postDiv = document.createElement('div');
+                let content = post.content;
+                postDiv.className = 'newpost-container';
+                postDiv.innerHTML=`<h4><a href = "/profile/${post.username}">${post.username}</a></h4>
+            <button class = "editpost">Edit post</button>
+            <p>${post.timestamp}</p>
+            <div class = "content_display" style = "font-size: 22px">
+                ${content}
+                <div class = "content_edit" style="display: none;"> <!-- Không được để id ở đây vì mình tạo rất nhiều div như này dẫn đến lỗi --!>
+                <textarea name = "textedit" class = "textarea_display">${content}</textarea>
+                <button class = "save">Save</button>
+                <button class = "cancel">Cancel</button>
+                </div>
+            </div>
+            <div>
+                <span class = "likes-count">${post.number_of_likes} Likes</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <a class = "likebutton" href ="/like/${post.id}/profile"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>`
+            document.getElementById('posts-container').appendChild(postDiv);
+            setupPostEventListeners(postDiv, post); //Thêm eventListener cho các button trong post vừa tạo
+            }
+ function setupPostEventListeners(postDiv, post) {
+    const editButton = postDiv.querySelector('.editpost');
+    const saveButton = postDiv.querySelector('.save');
+    const cancelButton = postDiv.querySelector('.cancel');
+    const contentDisplay = postDiv.querySelector('.content_display');
+    const contentEdit = postDiv.querySelector('.content_edit');
+    const textarea = postDiv.querySelector('.textarea_display');
+    
+    console.log('Setting up listeners for post:', post.id); // Debug
+    console.log('Edit button found:', editButton); // Debug
+    
+    // Xử lý khi click Edit post
+    editButton.addEventListener('click', function(e) {
+        console.log('Edit button clicked'); // Debug
+        e.preventDefault();
+        
+        contentDisplay.style.display = 'none';  // Ẩn nội dung hiển thị
+        contentEdit.style.display = 'block';    // Hiện form edit
+        editButton.style.display = 'none';      // Ẩn button Edit
+        textarea.focus();                       // Focus vào textarea
+        
+        console.log('Edit mode activated'); // Debug
+    });
+    
+    // Xử lý khi click Save
+    saveButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Save button clicked'); // Debug
+        
+        const newContent = textarea.value;
+        
+        // Cập nhật nội dung hiển thị
+        contentDisplay.innerHTML = newContent;
+        
+        // Ẩn form edit và hiện lại nội dung
+        contentEdit.style.display = 'none';
+        contentDisplay.style.display = 'block';
+        editButton.style.display = 'inline-block';
+        
+        console.log('Content saved:', newContent); // Debug
+        
+        // Ở đây bạn có thể thêm code để gửi request cập nhật lên server
+        // updatePostOnServer(post.id, newContent);
+    });
+}
+    </script>
+{%endblock%}

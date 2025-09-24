@@ -1,0 +1,70 @@
+{% extends "network/layout.html" %}
+{%block body%}
+<div id = "profile_display">
+    <h1>{{username}}{% if user.username != username %}<span style = "font-size:20px"><form action = "{% url "toggle_follow" username %}" method = "POST">{% csrf_token %}<button class = "postbutton" type ="submit">{% if is_following %}Unfollow{%else%}Follow{%endif%}</button></form></span>{%endif%}</h1>
+    <h2><span id ="followers">Followers: {% if followers_count %}{{followers_count}}{%else%}0{%endif%}</span>
+        <span id ="following">Following: {%if following_count %}{{following_count}}{%else%}0{%endif%}</span>
+    </h2>
+</div>
+    <div id = "posts-container">
+    </div>
+    <script>
+        const username = "{{username}}";
+        document.addEventListener('DOMContentLoaded',function(){
+            fetch(`/taking_profile/${username}`) //Fetch ở đây cũng cần tạo path cho url
+            .then(response => response.json())
+            .then(data =>{
+                console.log(data);
+                data.posts.forEach(post => add_post(post));
+            })
+        })
+
+        function add_post(post){
+                const postDiv = document.createElement('div');
+                let content = post.content;
+                postDiv.className = 'newpost-container';
+                postDiv.innerHTML=`<h4><a href = "/profile/${post.username}">${post.username}</a></h4>
+            <button  class = "editingpost">Edit post</button>
+            <p>${post.timestamp}</p>
+            <div class = "unsavedcontent_display" style = "font-size: 22px">
+                ${content}
+                <div style="display: none;"> <!-- Không được để id ở đây vì mình tạo rất nhiều div như này dẫn đến lỗi --!>
+                <textarea name = "textedit" class = "textarea_display" autofocus>${content}</textarea>
+                <button class = "save">Save</button>
+                <button class = "cancel">Cancel</button>
+                </div>
+            </div>
+            <div>
+                <span class = "likes-count">${post.number_of_likes} Likes</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <a class = "likebutton" href ="/like/${post.id}/profile"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>`
+            document.getElementById('posts-container').appendChild(postDiv);
+            }
+        function enableEditMode(editButton) {
+    // Tìm phần tử cha chứa nội dung post
+    const postContainer = editButton.closest('.newpost-container');
+    // Tìm div hiển thị nội dung post
+    const contentDiv = postContainer.querySelector('.unsavedcontent_display');
+    // Tìm div chứa textarea và nút Save/Cancel (nằm trong contentDiv)
+    const editDiv = contentDiv.querySelector('div');
+    // Ẩn nội dung post hiện tại
+    contentDiv.childNodes[0].nodeValue = '';
+    // Hiện textarea và nút Save/Cancel
+    editDiv.style.display = 'block';
+    // Ẩn nút Edit
+    editButton.style.display = 'none';
+}
+
+// Gán sự kiện cho tất cả nút Edit post sau khi render post
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('editingpost')) {
+        event.preventDefault();
+        enableEditMode(event.target);
+    }
+});       
+    </script>
+{%endblock%}

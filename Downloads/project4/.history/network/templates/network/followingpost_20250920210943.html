@@ -1,0 +1,83 @@
+{% extends "network/layout.html" %}
+{%block body%}
+<div id = "posts-container">
+</div>
+<script>
+        const pagination_count = {{pagination_count}};
+        let start = 0;
+        const quantity = 10;
+        let currentpage = 1;
+        let soluong = {{pagination_count}};
+        console.log(soluong);
+        const username = "{{user.username}}"
+        document.addEventListener('DOMContentLoaded',function(){
+        function loadpost(start){
+            fetch(`/taking_follow/${username}`) //Fetch ở đây cũng cần tạo path cho url
+            .then(response => response.json())
+            .then(data =>{
+                console.log(data);
+                const riel_follow_listings = data.follow_listings.slice(start,start+quantity); //quá đẳng cấp trong việc sử dụng slice để limit display
+                console.log(riel_follow_listings);
+                riel_follow_listings.forEach(post => add_post(post));
+            })
+        }
+        loadpost(start); 
+            function add_post(post){
+                const postDiv = document.createElement('div');
+                postDiv.className = 'newpost-container';
+                postDiv.innerHTML=`<h4><a href = "/profile/${post.username}">${post.username}</a></h4>
+            <p>${post.timestamp}</p>    
+            <div style = "font-size: 22px">
+                ${post.content}
+            </div>
+            <div>
+                <span class = "likes-count">${post.number_of_likes} Likes</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <a class = "likebutton" href ="/like/${post.id}/index"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>`
+            document.getElementById('posts-container').appendChild(postDiv);
+            }
+            document.querySelectorAll('.page-link').forEach(button => {
+                button.addEventListener('click',function(event){
+                event.preventDefault();
+                document.getElementById('posts-container').innerHTML = '';
+                const pagitext = event.target.textContent.trim();
+                if(pagitext === "Previous"){ //Previous ko phải value nên phải const lấy text trước
+                    if(currentpage > 1){
+                        currentpage --;
+                        start = (currentpage-2)*quantity;
+                        loadpost(start);
+                    }else{
+                        loadpost(start);
+                    }
+                }
+                else if(pagitext === "Next"){
+                    if(currentpage < soluong){
+                        currentpage++;
+                        start = currentpage*quantity
+                    }
+                }
+                else{
+                currentpage = parseInt(pagitext) //Chuyển lại về dạng int
+                start = (currentpage-1)*10;
+                }
+                loadpost(start);
+                })
+                })
+            })                             
+    </script>
+    <div class = "pagination-div">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <span class = "previous"><li class="page-item"><a class="page-link">Previous</a></li></span>
+            {% for pagination_count in soluong %}
+            <li class="page-item"><a class="page-link">{{pagination_count}}</a></li>
+            {%endfor%}
+            <li class="page-item"><a class="page-link">Next</a></li>
+        </ul>
+        </nav>
+    </div>
+{%endblock%}

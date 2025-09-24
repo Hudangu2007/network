@@ -1,0 +1,82 @@
+{% extends "network/layout.html" %}
+{%block body%}
+<div id = "profile_display">
+    <h1>{{username}}{% if user.username != username %}<span style = "font-size:20px"><form action = "{% url "toggle_follow" username %}" method = "POST">{% csrf_token %}<button class = "postbutton" type ="submit">{% if is_following %}Unfollow{%else%}Follow{%endif%}</button></form></span>{%endif%}</h1>
+    <h2><span id ="followers">Followers: {% if followers_count %}{{followers_count}}{%else%}0{%endif%}</span>
+        <span id ="following">Following: {%if following_count %}{{following_count}}{%else%}0{%endif%}</span>
+    </h2>
+</div>
+    <div id = "posts-container">
+    </div>
+    <script>
+        const username = "{{username}}";
+        document.addEventListener('DOMContentLoaded',function(){
+            fetch(`/taking_profile/${username}`) //Fetch ở đây cũng cần tạo path cho url
+            .then(response => response.json())
+            .then(data =>{
+                console.log(data);
+                data.posts.forEach(post => add_post(post));
+            })
+        })
+
+        function add_post(post){
+                const postDiv = document.createElement('div');
+                let content = post.content;
+                postDiv.className = 'newpost-container';
+                postDiv.innerHTML=`<h4><a href = "/profile/${post.username}">${post.username}</a></h4>
+            <button  class = "editingpost">Edit post</button>
+            <p>${post.timestamp}</p>
+            <div class = "unsavedcontent_display" style = "font-size: 22px">
+                ${content}
+            </div>
+                <div style="display: none;"> <!-- Không được để id ở đây vì mình tạo rất nhiều div như này dẫn đến lỗi --!>
+                <textarea name = "textedit" class = "textarea_display" autofocus>${content}</textarea>
+                <button class = "save">Save</button>
+                <button class = "cancel">Cancel</button>
+                </div> <!-- Không nên để thằng textarea chung div với thằng content hiện tại, tránh bug --!>
+            <div>
+                <span class = "likes-count">${post.number_of_likes} Likes</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <a class = "likebutton" href ="/like/${post.id}/profile"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>`
+            document.getElementById('posts-container').appendChild(postDiv);
+            }
+//        document.addEventListener('DOMContentLoaded', function(){
+//            document.querySelectorAll('.editingpost').forEach(edit =>{
+//                edit.onclick = function(event){
+//                    event.preventDefault();
+//                    const parent = event.target.parentElement;
+//                    const textarea = parent.querySelector('.textarea_display');
+//                    const savebutton = parent.querySelector('.save');
+//                    const cancelbutton = parent.querySelector('.cancel');
+//                    console.log(parent);
+//                    console.log(savebutton);
+//                    console.log(cancelbutton);
+//                }
+//            })
+//        }) các post được tạo sau khi DOMContentLoaded nên khi chạy các nút .editingpost chưa tồn tại
+// ==> Fix: cho event listener cho các thằng phần tử cha (VD: posts-container)
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('posts-container').addEventListener('click', function(event) {
+        if (event.target.classList.contains('editingpost')) { //Nếu bấm vào class editingpost
+            event.preventDefault(); //Ngăn chặn hành vi mặc định của nút (nếu có)
+            const parent = event.target.parentElement; //Lấy phần tử cha của nút bấm
+            const textarea = parent.querySelector('.textarea_display'); //Lấy thằng textarea bên trong phần tử cha
+            const savebutton = parent.querySelector('.save');   //Lấy thằng nút save bên trong phần tử cha
+            const cancelbutton = parent.querySelector('.cancel'); 
+            // Ẩn nội dung post hiện tại
+            console.log(parent.childNodes); //Dùng childNodes để lấy tất cả các node con, trong đó có text node (khoảng trắng, xuống dòng)
+            parent.childNodes[6].textContent = ''; //console log để biết cái cần ẩn ở node nào
+            // Hiện textarea và nút Save/Cancel
+            textarea.parentElement.style.display = 'block'; //Hiện thằng div chứa textarea và nút save/cancel
+            // Ẩn nút Edit
+            event.target.style.display = 'none';
+            if 
+        }
+    });
+});
+    </script>
+{%endblock%}

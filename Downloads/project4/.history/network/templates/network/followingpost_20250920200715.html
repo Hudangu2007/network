@@ -1,0 +1,50 @@
+{% extends "network/layout.html" %}
+{%block body%}
+<div id = "posts-container">
+</div>
+<script>
+        let start = 0;
+        const quantity = 10;
+        const username = "{{user.username}}"
+        document.addEventListener('DOMContentLoaded',function(){
+            fetch(`/taking_follow/${username}`) //Fetch ở đây cũng cần tạo path cho url
+            .then(response => response.json())
+            .then(data =>{
+                console.log(data);
+                const riel_follow_listings = data.follow_listings.slice(start,start+quantity); //quá đẳng cấp trong việc sử dụng slice để limit display
+                console.log(riel_follow_listings);
+                riel_follow_listings.forEach(post => add_post(post));
+            })
+            function add_post(post){
+                const postDiv = document.createElement('div');
+                postDiv.className = 'newpost-container';
+                postDiv.innerHTML=`<h4><a href = "/profile/${post.username}">${post.username}</a></h4>
+            <p>${post.timestamp}</p>    
+            <div style = "font-size: 22px">
+                ${post.content}
+            </div>
+            <div>
+                <span class = "likes-count">${post.number_of_likes} Likes</span>
+                <div></div>
+                {% if user.is_authenticated %}
+                <a class = "likebutton" href ="/like/${post.id}/index"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Like_button.svg/1024px-Facebook_Like_button.svg.png" data-post-id="{{post_listing.id}}" width="25" height="25" alt="buttonpng" border="0" /></a>
+                {%else%}Please log in to like this post
+                {% endif %}
+            </div>`
+            document.getElementById('posts-container').appendChild(postDiv);
+            }
+
+        })
+    </script>
+    <div class = "pagination-div">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            {% for pagination_count in soluong %}
+            <li class="page-item"><a class="page-link" href="#">{{pagination_count}}</a></li>
+            {%endfor%}
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>
+        </nav>
+    </div>
+{%endblock%}
